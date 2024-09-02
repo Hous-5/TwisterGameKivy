@@ -1,8 +1,12 @@
 from kivy.uix.widget import Widget
-from kivy.graphics import Color, Ellipse, Rectangle, Line, PushMatrix, PopMatrix, Rotate
+from kivy.graphics import Color, Ellipse, Rectangle, Line, PushMatrix, PopMatrix, Rotate, Translate
 from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.uix.label import Label
+from kivy.app import App
+import math
+import random
+
 from game.player import KivyPlayer
 from game.dot import KivyDot
 from game.twister import KivyTwister
@@ -10,12 +14,6 @@ from game.power_up import KivyPowerUpManager
 from game.particle import KivyParticleSystem
 from game.background_particle import KivyBackgroundParticle
 from utils.haptic_feedback import HapticFeedback
-from utils.sound_manager import SoundManager
-from utils.asset_manager import AssetManager
-from utils.device_optimizer import DeviceOptimizer
-from kivy.app import App
-import math
-import random
 
 class TwisterGame(Widget):
     def __init__(self, sound_manager, asset_manager, device_optimizer, **kwargs):
@@ -25,7 +23,16 @@ class TwisterGame(Widget):
         self.device_optimizer = device_optimizer
         self.haptic_feedback = HapticFeedback()
         
-        self.bind(size=self.setup_game)
+        # Load textures
+        self.twister_texture = self.asset_manager.get_texture('Center_Sun.png')
+        self.player_texture = self.asset_manager.get_texture('Player.png')
+        
+        if self.twister_texture is None or self.player_texture is None:
+            print("Warning: Textures not loaded properly")
+            # Fallback to colored shapes if textures are not available
+            self.twister_texture = None
+            self.player_texture = None
+        
         Clock.schedule_once(self.setup_game, 0)
 
     def setup_game(self, *args):
@@ -43,21 +50,9 @@ class TwisterGame(Widget):
         self.time = 0
         self.dots = []
 
-        # Remove existing widgets if they exist
-        if hasattr(self, 'player'):
-            self.remove_widget(self.player)
-        if hasattr(self, 'twister'):
-            self.remove_widget(self.twister)
-
-        # Create and add twister
-        self.twister = KivyTwister(self.center_x, self.center_y, self.asset_manager)
-        self.add_widget(self.twister)
-        print(f"Twister added at position: ({self.twister.center_x}, {self.twister.center_y})")
-
-        # Create and add player
-        self.player = KivyPlayer(self.center_x, self.center_y, self.ring_radius, self.scale_factor, self.asset_manager)
-        self.add_widget(self.player)
-        print(f"Player added at position: {self.player.pos}")
+        # Create twister and player without adding them as widgets
+        self.twister = KivyTwister(self.center_x, self.center_y, self.twister_texture)
+        self.player = KivyPlayer(self.center_x, self.center_y, self.ring_radius, self.scale_factor, self.player_texture)
 
         self.power_up_manager = KivyPowerUpManager(self.center_x, self.center_y, self.ring_radius, self.device_optimizer)
         self.particle_system = KivyParticleSystem(self.scale_factor, self.device_optimizer)
@@ -79,7 +74,7 @@ class TwisterGame(Widget):
             Clock.schedule_interval(self.update, 1.0/60.0)  # 60 FPS
             self._update_scheduled = True
 
-        print("Game setup complete")  # Debug print
+        print("Game setup complete")
 
     def on_touch_down(self, touch):
         if not self.game_over:
@@ -95,7 +90,7 @@ class TwisterGame(Widget):
             if distance < dp(30) and duration < 0.3:
                 self.clockwise = not self.clockwise
                 self.power_up_manager.check_powerup_collection(touch.pos)
-                self.haptic_feedback.vibrate()  # This should now work correctly
+                self.haptic_feedback.vibrate()
 
             self._touch_start_pos = None
             self._touch_start_time = None
@@ -130,33 +125,32 @@ class TwisterGame(Widget):
             # Draw background particles
             for particle in self.background_particles:
                 particle.draw()
-
-            # Draw ring
-            Color(1, 1, 1)  # White color for the ring
-            Line(circle=(self.center_x, self.center_y, self.ring_radius), width=self.ring_thickness)
             
-            # Draw power-ups
-            self.power_up_manager.draw()
+            # Draw ring
+            self.draw_ring()
             
             # Draw dots
             for dot in self.dots:
                 dot.draw()
             
-            # Draw particles
+            # Draw power-ups
+            self.power_up_manager.draw()
+            
+            # Draw particle effects
             self.particle_system.draw()
-
-            # Draw twister
-            self.twister.draw()
-            #print(f"Drawing twister at: ({self.twister.center_x}, {self.twister.center_y})")
-
-            # Draw player
-            self.player.draw()
-            #print(f"Drawing player at: {self.player.pos}")
+            
+            # Draw twister and player
+            self.twister.draw(self.canvas)
+            self.player.draw(self.canvas)
 
         # Update score label
         self.score_label.text = f"Score: {self.score}"
         self.score_label.texture_update()
         self.score_label.size = self.score_label.texture_size
+
+    def draw_ring(self):
+        Color(1, 1, 1)  # White color
+        Line(circle=(self.center_x, self.center_y, self.ring_radius), width=self.ring_thickness)
 
     def update_dots(self):
         for dot in self.dots[:]:
