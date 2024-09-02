@@ -29,7 +29,7 @@ class KivyPlayer(Widget):
         self.center_x = self.twister_center_x + self.ring_radius * math.cos(self.angle)
         self.center_y = self.twister_center_y + self.ring_radius * math.sin(self.angle)
         self.pos = (self.center_x - self.size[0]/2, self.center_y - self.size[1]/2)
-        print(f"Player position updated to: {self.pos}")  # Debug print
+        #print(f"Player position updated to: {self.pos}")  # Debug print
 
     def move(self, clockwise, difficulty_multiplier):
         speed = 0.05 * difficulty_multiplier * self.speed_multiplier  # Adjust speed as needed
@@ -69,7 +69,7 @@ class KivyPlayer(Widget):
         return self.score_multiplier * (1 + self.combo * 0.1)  # 10% increase per combo level
     
     def draw(self):
-        print(f"Drawing player at: {self.pos}")  # Debug print
+        #print(f"Drawing player at: {self.pos}")  # Debug print
         with self.canvas:
             PushMatrix()
             Translate(self.center_x, self.center_y)

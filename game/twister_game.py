@@ -33,7 +33,7 @@ class TwisterGame(Widget):
         self.center_x = self.width / 2
         self.center_y = self.height / 2
         self.scale_factor = min(self.width, self.height) / 848
-        self.ring_radius = min(self.width, self.height) // 4
+        self.ring_radius = min(self.width, self.height) // 3
         self.ring_thickness = max(2, int(3 * self.scale_factor))
         self.score = 0
         self.game_over = False
@@ -147,11 +147,11 @@ class TwisterGame(Widget):
 
             # Draw twister
             self.twister.draw()
-            print(f"Drawing twister at: ({self.twister.center_x}, {self.twister.center_y})")
+            #print(f"Drawing twister at: ({self.twister.center_x}, {self.twister.center_y})")
 
             # Draw player
             self.player.draw()
-            print(f"Drawing player at: {self.player.pos}")
+            #print(f"Drawing player at: {self.player.pos}")
 
         # Update score label
         self.score_label.text = f"Score: {self.score}"

@@ -44,7 +44,7 @@ class KivyTwister(Widget):
         return super(KivyTwister, self).on_touch_down(touch)
     
     def draw(self):
-        print(f"Drawing twister at: ({self.center_x}, {self.center_y})")  # Debug print
+        #print(f"Drawing twister at: ({self.center_x}, {self.center_y})")  # Debug print
         with self.canvas:
             PushMatrix()
             Translate(self.center_x, self.center_y)
