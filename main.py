@@ -1,10 +1,9 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, FadeTransition
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.core.window import Window
 from screens.menu import MainMenu
 from screens.game import GameScreen
 from screens.settings import SettingsMenu
-from screens.pause import PauseMenu
 from screens.leaderboard import LeaderboardMenu
 from screens.login import LoginMenu
 from screens.game_over import GameOverScreen
@@ -15,6 +14,7 @@ from utils.device_optimizer import DeviceOptimizer
 
 class TwisterApp(App):
     def build(self):
+        # Initialize managers and settings
         self.asset_manager = AssetManager()
         self.sound_manager = SoundManager(self.asset_manager)
         self.server_comm = ServerCommunication("http://localhost:5000/api")
@@ -23,20 +23,29 @@ class TwisterApp(App):
         self.username = ""
         self.last_score = 0
         self.graphics_quality = 1
-        self.music_volume = 0.03  # Default music volume
-        self.sfx_volume = 0.3    # Default SFX volume
+        self.music_volume = 0.03
+        self.sfx_volume = 0.3
         self.vibration_enabled = True
 
+        # Create ScreenManager
         self.sm = ScreenManager(transition=FadeTransition())
-        self.sm.add_widget(MainMenu(name='menu'))
-        self.sm.add_widget(GameScreen(name='game'))
-        self.sm.add_widget(SettingsMenu(name='settings'))
-        self.sm.add_widget(PauseMenu(name='pause'))
-        self.sm.add_widget(LeaderboardMenu(name='leaderboard'))
-        self.sm.add_widget(LoginMenu(name='login'))
-        self.sm.add_widget(GameOverScreen(name='gameover'))
 
-        Window.bind(on_keyboard=self.on_keyboard)
+        # Create and add all screens
+        screens = [
+            MainMenu(name='menu'),
+            GameScreen(name='game'),
+            SettingsMenu(name='settings'),
+            LeaderboardMenu(name='leaderboard'),
+            LoginMenu(name='login'),
+            GameOverScreen(name='gameover')
+        ]
+
+        for screen in screens:
+            self.sm.add_widget(screen)
+            print(f"Added screen: {screen.name}")  # Debug print
+
+        # Set initial screen
+        self.sm.current = 'menu'
 
         return self.sm
 
@@ -51,7 +60,7 @@ class TwisterApp(App):
         return False
 
     def start_game(self):
-        self.sm.get_screen('game').game.__init__()
+        self.sm.get_screen('game').start_game()
         self.sm.current = 'game'
 
     def show_settings(self):
@@ -64,6 +73,9 @@ class TwisterApp(App):
     def show_login(self):
         self.sm.current = 'login'
 
+    def show_main_menu(self):
+        self.sm.current = 'menu'
+
     def pause_game(self):
         self.sm.current = 'pause'
 
@@ -71,12 +83,14 @@ class TwisterApp(App):
         self.sm.current = 'game'
 
     def show_game_over(self, score):
+        print(f"Attempting to show game over screen with score: {score}")  # Debug print
         self.last_score = score
-        self.sm.get_screen('gameover').set_score(score)
-        self.sm.current = 'gameover'
-
-    def show_main_menu(self):
-        self.sm.current = 'menu'
+        gameover_screen = self.sm.get_screen('gameover')
+        if gameover_screen:
+            gameover_screen.set_score(score)
+            self.sm.current = 'gameover'
+        else:
+            print("Error: GameOverScreen not found")  # Debug print
 
     def register(self, username, password):
         def on_success(result):

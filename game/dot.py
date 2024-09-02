@@ -18,7 +18,7 @@ class KivyDot:
         self.y = self.center_y + math.sin(self.angle) * self.distance
 
     def move(self, difficulty_multiplier):
-        speed = 3 * difficulty_multiplier
+        speed = 1.5 * difficulty_multiplier
         self.angle += 0.02 * difficulty_multiplier
         self.distance += speed * 1.2
         self.update_position()

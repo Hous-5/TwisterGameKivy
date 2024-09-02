@@ -12,7 +12,7 @@ class KivyPlayer:
         self.radius = max(8, int(12 * scale_factor))
         self.angle = 0
         self.texture = texture
-        self.size = (self.radius * 2.3, self.radius * 2.3)
+        self.size = (self.radius * 3.5, self.radius * 3.5)
         self.combo = 0
         self.combo_timer = 0
         self.score_multiplier = 1
@@ -25,7 +25,7 @@ class KivyPlayer:
         self.center_y = self.twister_center_y + self.ring_radius * math.sin(self.angle)
 
     def move(self, clockwise, difficulty_multiplier):
-        speed = 0.05 * difficulty_multiplier * self.speed_multiplier
+        speed = 0.015 * difficulty_multiplier * self.speed_multiplier
         if clockwise:
             self.angle -= speed
         else:
@@ -34,8 +34,8 @@ class KivyPlayer:
         self.update_position()
 
     def draw(self, canvas):
-        print("Drawing player")
-        print(f"Position: ({self.center_x}, {self.center_y}), Size: {self.size}")
+        #print("Drawing player")
+        #print(f"Position: ({self.center_x}, {self.center_y}), Size: {self.size}")
         with canvas:
             PushMatrix()
             Translate(self.center_x, self.center_y)

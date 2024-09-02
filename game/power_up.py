@@ -83,8 +83,13 @@ class KivyPowerUpManager:
         for power_up in self.power_ups:
             power_up.draw()
 
-    def check_powerup_collection(self, touch_pos):
+    def check_powerup_collection(self, touch_pos, player):
         for powerup in self.power_ups[:]:
             if math.hypot(touch_pos[0] - powerup.x, touch_pos[1] - powerup.y) < powerup.radius:
-                self.activate_power_up(powerup, self.game.player)
+                self.activate_power_up(powerup, player)
                 self.power_ups.remove(powerup)
+
+    def reset(self):
+        self.power_ups.clear()
+        self.active_power_up = None
+        self.active_time = 0
