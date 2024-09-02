@@ -23,7 +23,9 @@ class GameOverScreen(Screen):
         self.score_label.text = f"Game Over\nFinal Score: {score}"
 
     def play_again(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().start_game()
 
     def main_menu(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_main_menu()

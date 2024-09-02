@@ -17,16 +17,21 @@ class MainMenu(Screen):
         self.add_widget(layout)
 
     def start_game(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().start_game()
 
     def show_settings(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_settings()
 
     def show_leaderboard(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_leaderboard()
 
     def show_login(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_login()
 
     def quit_game(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().stop()

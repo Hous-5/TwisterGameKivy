@@ -46,11 +46,15 @@ class SoundManager:
 
     def set_music_volume(self, volume):
         self.music_volume = max(0, min(1, volume))
-        self.update_volumes()
+        if self.music:
+            self.music.volume = self.master_volume * self.music_volume
 
     def set_sfx_volume(self, volume):
         self.sfx_volume = max(0, min(1, volume))
-        self.update_volumes()
+        for sound in [self.collect_sound, self.game_over_sound, self.menu_select_sound, self.menu_click_sound]:
+            if sound:
+                sound.volume = self.master_volume * self.sfx_volume
+
 
     def stop_music(self):
         if self.music:

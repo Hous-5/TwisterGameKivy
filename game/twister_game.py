@@ -23,16 +23,17 @@ class TwisterGame(Widget):
         self.sound_manager = sound_manager
         self.asset_manager = asset_manager
         self.device_optimizer = device_optimizer
-        self.haptic_feedback = HapticFeedback()  # Initialize HapticFeedback
+        self.haptic_feedback = HapticFeedback()
         
         self.bind(size=self.setup_game)
-        self.setup_game()
+        Clock.schedule_once(self.setup_game, 0)
 
     def setup_game(self, *args):
+        print("Setting up game...")
         self.center_x = self.width / 2
         self.center_y = self.height / 2
         self.scale_factor = min(self.width, self.height) / 848
-        self.ring_radius = min(self.width, self.height) // 3
+        self.ring_radius = min(self.width, self.height) // 4
         self.ring_thickness = max(2, int(3 * self.scale_factor))
         self.score = 0
         self.game_over = False
@@ -40,19 +41,24 @@ class TwisterGame(Widget):
         self.difficulty_multiplier = 1
         self.frames_since_last_spawn = 0
         self.time = 0
-
-        if hasattr(self, 'player'):
-            self.remove_widget(self.player)
-        self.player = KivyPlayer(self.center_x, self.center_y, self.ring_radius, self.scale_factor, self.asset_manager)
-        self.add_widget(self.player)
-
         self.dots = []
 
+        # Remove existing widgets if they exist
+        if hasattr(self, 'player'):
+            self.remove_widget(self.player)
         if hasattr(self, 'twister'):
             self.remove_widget(self.twister)
+
+        # Create and add twister
         self.twister = KivyTwister(self.center_x, self.center_y, self.asset_manager)
         self.add_widget(self.twister)
-        
+        print(f"Twister added at position: ({self.twister.center_x}, {self.twister.center_y})")
+
+        # Create and add player
+        self.player = KivyPlayer(self.center_x, self.center_y, self.ring_radius, self.scale_factor, self.asset_manager)
+        self.add_widget(self.player)
+        print(f"Player added at position: {self.player.pos}")
+
         self.power_up_manager = KivyPowerUpManager(self.center_x, self.center_y, self.ring_radius, self.device_optimizer)
         self.particle_system = KivyParticleSystem(self.scale_factor, self.device_optimizer)
 
@@ -72,6 +78,8 @@ class TwisterGame(Widget):
         if not hasattr(self, '_update_scheduled'):
             Clock.schedule_interval(self.update, 1.0/60.0)  # 60 FPS
             self._update_scheduled = True
+
+        print("Game setup complete")  # Debug print
 
     def on_touch_down(self, touch):
         if not self.game_over:
@@ -105,7 +113,7 @@ class TwisterGame(Widget):
             self.player.move(self.clockwise, self.difficulty_multiplier)
             self.update_dots()
             self.spawn_new_dot()
-            self.difficulty_multiplier *= 1.0002  # Adjust as needed
+            self.difficulty_multiplier *= 1.0002
             self.power_up_manager.update(self.player, self.difficulty_multiplier, dt)
             self.particle_system.update(dt)
             self.twister.update(dt)
@@ -124,7 +132,7 @@ class TwisterGame(Widget):
                 particle.draw()
 
             # Draw ring
-            Color(1, 1, 1)
+            Color(1, 1, 1)  # White color for the ring
             Line(circle=(self.center_x, self.center_y, self.ring_radius), width=self.ring_thickness)
             
             # Draw power-ups
@@ -136,6 +144,14 @@ class TwisterGame(Widget):
             
             # Draw particles
             self.particle_system.draw()
+
+            # Draw twister
+            self.twister.draw()
+            print(f"Drawing twister at: ({self.twister.center_x}, {self.twister.center_y})")
+
+            # Draw player
+            self.player.draw()
+            print(f"Drawing player at: {self.player.pos}")
 
         # Update score label
         self.score_label.text = f"Score: {self.score}"
@@ -151,14 +167,14 @@ class TwisterGame(Widget):
                 if dot.good:
                     self.score += int(1 * self.player.get_score_multiplier())
                     self.player.increase_combo()
-                    self.app.sound_manager.play_collect()
+                    self.sound_manager.play_collect()
                     self.particle_system.create_particles(dot.x, dot.y, (0, 1, 0, 1))  # Green particles
                     self.dots.remove(dot)
                 else:
                     self.game_over = True
                     self.particle_system.create_particles(dot.x, dot.y, (1, 0, 0, 1))  # Red particles
-                    self.app.sound_manager.play_game_over()
-                    self.app.show_game_over(self.score)
+                    self.sound_manager.play_game_over()
+                    App.get_running_app().show_game_over(self.score)
 
     def update_background_particles(self):
         count = self.device_optimizer.get_background_particle_count()

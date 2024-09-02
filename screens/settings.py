@@ -17,10 +17,12 @@ class SettingsMenu(Screen):
         
         self.layout.add_widget(Label(text='Music Volume'))
         self.music_slider = Slider(min=0, max=1, value=0.5)
+        self.music_slider.bind(value=self.on_music_volume_change)
         self.layout.add_widget(self.music_slider)
         
         self.layout.add_widget(Label(text='SFX Volume'))
         self.sfx_slider = Slider(min=0, max=1, value=0.5)
+        self.sfx_slider.bind(value=self.on_sfx_volume_change)
         self.layout.add_widget(self.sfx_slider)
         
         self.layout.add_widget(Label(text='Vibration'))
@@ -40,10 +42,19 @@ class SettingsMenu(Screen):
         self.vibration_switch.active = app.vibration_enabled
 
     def save_settings(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         app = App.get_running_app()
         app.graphics_quality = int(self.quality_slider.value)
-        app.music_volume = self.music_slider.value
-        app.sfx_volume = self.sfx_slider.value
         app.vibration_enabled = self.vibration_switch.active
         app.apply_settings()
         app.show_main_menu()
+
+    def on_music_volume_change(self, instance, value):
+        app = App.get_running_app()
+        app.music_volume = value
+        app.sound_manager.set_music_volume(value)
+
+    def on_sfx_volume_change(self, instance, value):
+        app = App.get_running_app()
+        app.sfx_volume = value
+        app.sound_manager.set_sfx_volume(value)

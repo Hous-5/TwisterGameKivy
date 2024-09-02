@@ -15,10 +15,13 @@ class PauseMenu(Screen):
         self.add_widget(layout)
 
     def resume_game(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().resume_game()
 
     def show_settings(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_settings()
 
     def quit_to_main(self, instance):
+        App.get_running_app().sound_manager.play_menu_click()
         App.get_running_app().show_main_menu()
