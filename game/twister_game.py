@@ -4,6 +4,7 @@ from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.app import App
+from kivy.core.window import Window
 import math
 import random
 
@@ -25,11 +26,12 @@ class TwisterGame(Widget):
         
         self.game_started = False
         self.game_over = False
-        self.score = 0
+        self.score = 0  # Initialize score here
+        self.elapsed_time = 0
         
         self.load_textures()
-        self.create_score_label()
         Clock.schedule_once(self.create_game_objects, 0)
+        Clock.schedule_once(self.create_ui_elements, 0)
 
     def load_textures(self):
         self.twister_texture = self.asset_manager.get_texture('Center_Sun.png')
@@ -40,15 +42,22 @@ class TwisterGame(Widget):
             self.twister_texture = None
             self.player_texture = None
 
-    def create_score_label(self):
+    def create_ui_elements(self, dt):
         self.score_label = Label(
             text="Score: 0",
             font_size=dp(20),
             size_hint=(None, None),
-            pos_hint={'x': 0.02, 'top': 0.98}
+            pos=(dp(10), Window.height - dp(40))
         )
         self.add_widget(self.score_label)
-        self.update_score_label()
+
+        self.time_label = Label(
+            text="Time: 0:00",
+            font_size=dp(20),
+            size_hint=(None, None),
+            pos=(Window.width / 2 - dp(40), Window.height - dp(40))
+        )
+        self.add_widget(self.time_label)
 
     def create_game_objects(self, dt):
         self.center_x = self.width / 2
@@ -80,7 +89,9 @@ class TwisterGame(Widget):
             self.game_started = True
             self.game_over = False
             self.score = 0
+            self.elapsed_time = 0
             self.update_score_label()
+            self.update_time_label()
             Clock.schedule_interval(self.update, 1.0/60.0)  # Start the game loop
             print("Game started!")
 
@@ -89,12 +100,20 @@ class TwisterGame(Widget):
             self.score_label.text = f"Score: {self.score}"
             self.score_label.texture_update()
             self.score_label.size = self.score_label.texture_size
-        else:
-            print("Warning: score_label not created yet")
+            self.score_label.pos = (dp(10), Window.height - self.score_label.height - dp(10))
+
+    def update_time_label(self):
+        if hasattr(self, 'time_label'):
+            minutes = int(self.elapsed_time // 60)
+            seconds = int(self.elapsed_time % 60)
+            self.time_label.text = f"Time: {minutes}:{seconds:02d}"
+            self.time_label.texture_update()
+            self.time_label.size = self.time_label.texture_size
+            self.time_label.pos = (Window.width / 2 - self.time_label.width / 2, Window.height - self.time_label.height - dp(10))
 
     def update(self, dt):
         if self.game_started and not self.game_over:
-            self.time += dt
+            self.elapsed_time += dt
             self.player.move(self.clockwise, self.difficulty_multiplier)
             self.update_dots()
             self.spawn_new_dot()
@@ -107,6 +126,7 @@ class TwisterGame(Widget):
                 particle.move()
 
             self.update_score_label()
+            self.update_time_label()
 
         self.canvas.clear()
         with self.canvas:
@@ -118,6 +138,18 @@ class TwisterGame(Widget):
             self.particle_system.draw()
             self.twister.draw(self.canvas)
             self.player.draw(self.canvas)
+
+        # Ensure labels are on top
+        self.remove_widget(self.score_label)
+        self.remove_widget(self.time_label)
+        self.add_widget(self.score_label)
+        self.add_widget(self.time_label)
+
+        # Ensure labels are on top
+        self.remove_widget(self.score_label)
+        self.remove_widget(self.time_label)
+        self.add_widget(self.score_label)
+        self.add_widget(self.time_label)
 
     def draw_background(self):
         Color(0.12, 0.12, 0.12)  # Dark gray background
@@ -142,7 +174,7 @@ class TwisterGame(Widget):
                 self.dots.remove(dot)
             elif self.player.collides_with(dot):
                 if dot.good:
-                    self.score += int(1 * self.player.get_score_multiplier())
+                    self.score += int(1 * self.player.get_score_multiplier())  # Update score here
                     self.player.increase_combo()
                     self.sound_manager.play_collect()
                     self.particle_system.create_particles(dot.x, dot.y, (0, 1, 0, 1))  # Green particles
@@ -188,17 +220,24 @@ class TwisterGame(Widget):
             Clock.schedule_interval(self.update, 1.0/60.0)
             print("Game resumed")
 
+    def on_size(self, *args):
+        # Update label positions when window size changes
+        self.update_score_label()
+        self.update_time_label()
+
     def reset_game(self):
         self.game_started = False
         self.game_over = False
         self.score = 0
+        self.elapsed_time = 0
         self.clockwise = True
         self.difficulty_multiplier = 1
         self.frames_since_last_spawn = 0
-        self.time = 0
         self.dots.clear()
         self.player.reset()
         self.power_up_manager.reset()
         self.particle_system.reset()
         self.update_score_label()
+        self.update_time_label()
         print("Game reset")
+
