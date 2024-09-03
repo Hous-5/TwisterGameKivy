@@ -45,6 +45,8 @@ class SettingsMenu(Screen):
         App.get_running_app().sound_manager.play_menu_click()
         app = App.get_running_app()
         app.graphics_quality = int(self.quality_slider.value)
+        app.music_volume = self.music_slider.value
+        app.sfx_volume = self.sfx_slider.value
         app.vibration_enabled = self.vibration_switch.active
         app.apply_settings()
         app.show_main_menu()

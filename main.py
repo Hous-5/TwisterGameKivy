@@ -34,6 +34,10 @@ class TwisterApp(App):
         self.sfx_volume = config.INITIAL_SFX_VOLUME
         self.vibration_enabled = config.INITIAL_VIBRATION_ENABLED
 
+        # Initialize sound manager with correct volumes
+        self.sound_manager.set_music_volume(self.music_volume)
+        self.sound_manager.set_sfx_volume(self.sfx_volume)
+
         # Set window size
         Window.size = (config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
 

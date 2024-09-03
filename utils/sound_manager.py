@@ -10,8 +10,8 @@ class SoundManager:
         self.direction_change_sound = self.asset_manager.get_sound('direction_change.wav')
 
         self.master_volume = 0.75
-        self.music_volume = 0.5
-        self.sfx_volume = 0.7
+        self.music_volume = 0.03
+        self.sfx_volume = 0.3
 
         if self.music:
             self.music.loop = True
