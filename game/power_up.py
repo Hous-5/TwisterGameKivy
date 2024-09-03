@@ -19,9 +19,9 @@ class KivyPowerUp:
         self.y = self.center_y + math.sin(self.angle) * self.distance
 
     def move(self, difficulty_multiplier):
-        speed = 3 * difficulty_multiplier  # Adjust base speed as needed
-        self.angle += 0.02 * difficulty_multiplier
-        self.distance += speed * 1.2
+        speed = 1.00002 * difficulty_multiplier  # Adjust base speed as needed
+        #self.angle += 0.02 * difficulty_multiplier
+        self.distance += speed * 1.1
         self.update_position()
 
     def draw(self):

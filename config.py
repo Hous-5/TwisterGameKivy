@@ -15,9 +15,9 @@ COMBO_TEXT_COLOR = (1, 1, 0, 1)
 
 # Game mechanics
 DIFFICULTY_LEVELS = {
-    'easy': {'multiplier': 0.8, 'spawn_rate': 90},
-    'normal': {'multiplier': 1.0, 'spawn_rate': 60},
-    'hard': {'multiplier': 1.2, 'spawn_rate': 45}
+    'easy': {'multiplier': 0.99998, 'spawn_rate': 70},
+    'normal': {'multiplier': 1.0, 'spawn_rate': 50},
+    'hard': {'multiplier': 1.00002, 'spawn_rate': 30}
 }
 
 POWER_UP_TYPES = ['speed', 'score', 'invincibility']
@@ -28,16 +28,16 @@ POWER_UP_COLORS = {
 }
 
 POWER_UP_DURATION = 5  # seconds
-POWER_UP_SPAWN_CHANCE = 0.02
+POWER_UP_SPAWN_CHANCE = 0.001
 
 # Player settings
 PLAYER_INITIAL_SPEED = 0.015
-PLAYER_SPEED_POWERUP_MULTIPLIER = 2
+PLAYER_SPEED_POWERUP_MULTIPLIER = 1.5
 PLAYER_SCORE_POWERUP_MULTIPLIER = 2
 
 # Particle settings
 PARTICLE_LIFETIME_RANGE = (0.5, 1.5)
-PARTICLE_SPEED_RANGE = (50, 150)
+PARTICLE_SPEED_RANGE = (50, 100)
 
 # Achievement settings
 ACHIEVEMENTS = [
