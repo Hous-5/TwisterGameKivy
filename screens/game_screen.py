@@ -1,7 +1,6 @@
 from kivy.uix.screenmanager import Screen
-from kivy.core.window import Window
-from game.twister_game import TwisterGame
 from kivy.app import App
+from game.twister_game import TwisterGame
 
 class GameScreen(Screen):
     def __init__(self, **kwargs):
@@ -18,7 +17,7 @@ class GameScreen(Screen):
             sound_manager=app.sound_manager,
             asset_manager=app.asset_manager,
             device_optimizer=app.device_optimizer,
-            size=(Window.width, Window.height)
+            size=(self.width, self.height)
         )
         self.add_widget(self.game)
 
@@ -26,6 +25,10 @@ class GameScreen(Screen):
         if not self.game:
             self.create_game()
         self.game.start_game()
+
+    def resume_game(self):
+        if self.game:
+            self.game.resume_game()
 
     def on_leave(self):
         if self.game:

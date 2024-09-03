@@ -1,8 +1,6 @@
-from kivy.uix.widget import Widget
 from kivy.graphics import PushMatrix, PopMatrix, Ellipse, Translate, Rotate, Rectangle, Color
-from kivy.properties import NumericProperty
 import math
-
+import config
 
 class KivyPlayer:
     def __init__(self, center_x, center_y, ring_radius, scale_factor, texture):
@@ -18,6 +16,7 @@ class KivyPlayer:
         self.score_multiplier = 1
         self.speed_multiplier = 1
         self.invincible = False
+        self.invincible_timer = 0
         self.update_position()
 
     def update_position(self):
@@ -25,7 +24,7 @@ class KivyPlayer:
         self.center_y = self.twister_center_y + self.ring_radius * math.sin(self.angle)
 
     def move(self, clockwise, difficulty_multiplier):
-        speed = 0.015 * difficulty_multiplier * self.speed_multiplier
+        speed = config.PLAYER_INITIAL_SPEED * difficulty_multiplier * self.speed_multiplier
         if clockwise:
             self.angle -= speed
         else:
@@ -34,8 +33,6 @@ class KivyPlayer:
         self.update_position()
 
     def draw(self, canvas):
-        #print("Drawing player")
-        #print(f"Position: ({self.center_x}, {self.center_y}), Size: {self.size}")
         with canvas:
             PushMatrix()
             Translate(self.center_x, self.center_y)
@@ -46,6 +43,12 @@ class KivyPlayer:
             else:
                 Color(1, 0, 0)  # Red color for placeholder
                 Ellipse(pos=(-self.radius, -self.radius), size=(self.radius*2, self.radius*2))
+            
+            # Add a glow effect when invincible
+            if self.invincible:
+                Color(1, 1, 1, 0.5)  # Semi-transparent white
+                Ellipse(pos=(-self.radius*1.2, -self.radius*1.2), size=(self.radius*2.4, self.radius*2.4))
+            
             PopMatrix()
 
     def collides_with(self, dot):
@@ -56,6 +59,11 @@ class KivyPlayer:
         self.combo_timer -= dt
         if self.combo_timer <= 0:
             self.combo = 0
+        
+        if self.invincible:
+            self.invincible_timer -= dt
+            if self.invincible_timer <= 0:
+                self.invincible = False
 
     def increase_combo(self):
         self.combo += 1
@@ -63,3 +71,17 @@ class KivyPlayer:
 
     def get_score_multiplier(self):
         return self.score_multiplier * (1 + self.combo * 0.1)  # 10% increase per combo level
+
+    def activate_invincibility(self, duration):
+        self.invincible = True
+        self.invincible_timer = duration
+
+    def reset(self):
+        self.angle = 0
+        self.combo = 0
+        self.combo_timer = 0
+        self.score_multiplier = 1
+        self.speed_multiplier = 1
+        self.invincible = False
+        self.invincible_timer = 0
+        self.update_position()

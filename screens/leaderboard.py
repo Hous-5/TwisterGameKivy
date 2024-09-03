@@ -3,7 +3,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.app import App
-
 class LeaderboardMenu(Screen):
     def __init__(self, **kwargs):
         super(LeaderboardMenu, self).__init__(**kwargs)

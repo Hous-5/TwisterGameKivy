@@ -1,6 +1,7 @@
-from kivy.graphics import Color, Ellipse
 import random
 import math
+from kivy.graphics import Color, Ellipse
+import config
 
 class KivyPowerUp:
     def __init__(self, center_x, center_y, ring_radius):
@@ -8,9 +9,9 @@ class KivyPowerUp:
         self.center_y = center_y
         self.angle = random.uniform(0, 2 * math.pi)
         self.distance = 50
-        self.type = random.choice(["speed", "score", "invincibility"])
+        self.type = random.choice(config.POWER_UP_TYPES)
         self.radius = 8  # Adjust as needed
-        self.duration = 5  # seconds
+        self.duration = config.POWER_UP_DURATION
         self.update_position()
 
     def update_position(self):
@@ -24,12 +25,7 @@ class KivyPowerUp:
         self.update_position()
 
     def draw(self):
-        if self.type == "speed":
-            Color(0, 0, 1)  # Blue
-        elif self.type == "score":
-            Color(0.5, 0, 0.5)  # Purple
-        else:  # invincibility
-            Color(1, 0.5, 0)  # Orange
+        Color(*config.POWER_UP_COLORS[self.type])
         Ellipse(pos=(self.x - self.radius, self.y - self.radius), size=(self.radius * 2, self.radius * 2))
 
 class KivyPowerUpManager:
@@ -43,7 +39,7 @@ class KivyPowerUpManager:
         self.active_time = 0
 
     def spawn_power_up(self):
-        if random.random() < 0.02:  # 2% chance to spawn a power-up each frame
+        if random.random() < config.POWER_UP_SPAWN_CHANCE:
             self.power_ups.append(KivyPowerUp(self.center_x, self.center_y, self.ring_radius))
 
     def update(self, player, difficulty_multiplier, dt):
@@ -64,19 +60,22 @@ class KivyPowerUpManager:
         self.active_power_up = power_up
         self.active_time = 0
         if power_up.type == "speed":
-            player.speed_multiplier = 2
+            player.speed_multiplier = config.PLAYER_SPEED_POWERUP_MULTIPLIER
         elif power_up.type == "score":
-            player.score_multiplier = 2
+            player.score_multiplier = config.PLAYER_SCORE_POWERUP_MULTIPLIER
         elif power_up.type == "invincibility":
-            player.invincible = True
+            player.activate_invincibility(power_up.duration)
+        
+        from kivy.app import App
+        App.get_running_app().sound_manager.play_powerup()
+        App.get_running_app().sm.get_screen('game').game.collect_powerup()
 
     def deactivate_power_up(self, player):
         if self.active_power_up.type == "speed":
             player.speed_multiplier = 1
         elif self.active_power_up.type == "score":
             player.score_multiplier = 1
-        elif self.active_power_up.type == "invincibility":
-            player.invincible = False
+        # Invincibility is handled by the player's own timer
         self.active_power_up = None
 
     def draw(self):

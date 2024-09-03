@@ -1,16 +1,22 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
+from kivy.uix.screenmanager import ScreenManager, FadeTransition, SlideTransition, CardTransition
 from kivy.core.window import Window
 from screens.menu import MainMenu
-from screens.game import GameScreen
+from screens.game_screen import GameScreen
 from screens.settings import SettingsMenu
 from screens.leaderboard import LeaderboardMenu
 from screens.login import LoginMenu
 from screens.game_over import GameOverScreen
+from screens.tutorial import TutorialScreen
+from screens.pause import PauseMenu
+from screens.difficulty import DifficultyScreen
+from screens.achievements import AchievementsScreen
 from utils.sound_manager import SoundManager
 from utils.server_communication import ServerCommunication
 from utils.asset_manager import AssetManager
 from utils.device_optimizer import DeviceOptimizer
+from game.achievement_system import AchievementSystem
+import config
 
 class TwisterApp(App):
     def build(self):
@@ -19,78 +25,97 @@ class TwisterApp(App):
         self.sound_manager = SoundManager(self.asset_manager)
         self.server_comm = ServerCommunication("http://localhost:5000/api")
         self.device_optimizer = DeviceOptimizer()
+        self.achievement_system = AchievementSystem()  # Add this line
         self.is_logged_in = False
         self.username = ""
         self.last_score = 0
-        self.graphics_quality = 1
-        self.music_volume = 0.03
-        self.sfx_volume = 0.3
-        self.vibration_enabled = True
+        self.graphics_quality = config.INITIAL_GRAPHICS_QUALITY
+        self.music_volume = config.INITIAL_MUSIC_VOLUME
+        self.sfx_volume = config.INITIAL_SFX_VOLUME
+        self.vibration_enabled = config.INITIAL_VIBRATION_ENABLED
 
-        # Create ScreenManager
-        self.sm = ScreenManager(transition=FadeTransition())
+        # Set window size
+        Window.size = (config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
 
-        # Create and add all screens
+        # Create ScreenManager with custom transitions
+        self.sm = ScreenManager(transition=FadeTransition(duration=0.5))
+
+        # Create and add all screens with custom transitions
         screens = [
-            MainMenu(name='menu'),
-            GameScreen(name='game'),
-            SettingsMenu(name='settings'),
-            LeaderboardMenu(name='leaderboard'),
-            LoginMenu(name='login'),
-            GameOverScreen(name='gameover')
+            (MainMenu(name='menu'), SlideTransition(direction='left')),
+            (GameScreen(name='game'), FadeTransition(duration=0.3)),
+            (SettingsMenu(name='settings'), CardTransition(direction='up', mode='push')),
+            (LeaderboardMenu(name='leaderboard'), SlideTransition(direction='left')),
+            (LoginMenu(name='login'), CardTransition(direction='up', mode='push')),
+            (GameOverScreen(name='gameover'), FadeTransition(duration=0.5)),
+            (TutorialScreen(name='tutorial'), SlideTransition(direction='left')),
+            (PauseMenu(name='pause'), CardTransition(direction='down', mode='pop')),
+            (DifficultyScreen(name='difficulty'), SlideTransition(direction='left')),
+            (AchievementsScreen(name='achievements'), SlideTransition(direction='left'))
         ]
 
-        for screen in screens:
+        for screen, transition in screens:
             self.sm.add_widget(screen)
-            print(f"Added screen: {screen.name}")  # Debug print
+            screen.transition = transition
 
         # Set initial screen
         self.sm.current = 'menu'
 
         return self.sm
 
-    def on_keyboard(self, window, key, *args):
-        if key == 27:  # ESC key
-            if self.sm.current == 'game':
-                self.pause_game()
-                return True
-            elif self.sm.current == 'pause':
-                self.resume_game()
-                return True
-        return False
+    def on_start(self):
+        self.sound_manager.start_background_music()
+
+    def on_stop(self):
+        self.sound_manager.stop_background_music()
+        self.asset_manager.unload_unused_assets()
 
     def start_game(self):
         self.sm.get_screen('game').start_game()
         self.sm.current = 'game'
 
     def show_settings(self):
+        self.sm.transition.direction = 'up'
         self.sm.current = 'settings'
 
     def show_leaderboard(self):
+        self.sm.transition.direction = 'left'
         self.sm.current = 'leaderboard'
         self.sm.get_screen('leaderboard').fetch_leaderboard()
 
     def show_login(self):
+        self.sm.transition.direction = 'up'
         self.sm.current = 'login'
 
     def show_main_menu(self):
+        self.sm.transition.direction = 'right'
         self.sm.current = 'menu'
 
-    def pause_game(self):
+    def show_tutorial(self):
+        self.sm.transition.direction = 'left'
+        self.sm.current = 'tutorial'
+
+    def show_pause_menu(self):
+        self.sm.transition.direction = 'down'
         self.sm.current = 'pause'
 
+    def show_difficulty_screen(self):
+        self.sm.transition.direction = 'left'
+        self.sm.current = 'difficulty'
+
+    def show_achievements(self):
+        self.sm.transition.direction = 'left'
+        self.sm.current = 'achievements'
+
     def resume_game(self):
+        self.sm.transition.direction = 'up'
         self.sm.current = 'game'
+        self.sm.get_screen('game').resume_game()
 
     def show_game_over(self, score):
-        print(f"Attempting to show game over screen with score: {score}")  # Debug print
         self.last_score = score
-        gameover_screen = self.sm.get_screen('gameover')
-        if gameover_screen:
-            gameover_screen.set_score(score)
-            self.sm.current = 'gameover'
-        else:
-            print("Error: GameOverScreen not found")  # Debug print
+        self.sm.get_screen('gameover').set_score(score)
+        self.sm.current = 'gameover'
 
     def register(self, username, password):
         def on_success(result):
@@ -123,7 +148,7 @@ class TwisterApp(App):
         if self.is_logged_in:
             self.server_comm.submit_score(score, self.on_score_submitted)
 
-    def on_score_submitted(self, request, result):
+    def on_score_submitted(self, result):
         if result.get('success'):
             print("Score submitted successfully")
         else:
@@ -137,19 +162,13 @@ class TwisterApp(App):
         else:
             self.device_optimizer.device_tier = 'high'
         
-        # Update sound settings
         self.sound_manager.set_music_volume(self.music_volume)
         self.sound_manager.set_sfx_volume(self.sfx_volume)
 
-        # Update game settings if the game is currently running
         game_screen = self.sm.get_screen('game')
         if game_screen and game_screen.game:
             game_screen.game.particle_system.update_particle_count()
             game_screen.game.update_background_particles()
-
-    def on_stop(self):
-        self.sound_manager.stop_music()
-        self.asset_manager.unload_unused_assets()
 
 if __name__ == '__main__':
     TwisterApp().run()

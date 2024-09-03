@@ -1,6 +1,4 @@
-from kivy.uix.widget import Widget
-from kivy.graphics import Color, Rectangle, Ellipse, PushMatrix, PopMatrix, Rotate, Translate
-from kivy.properties import NumericProperty, ObjectProperty
+from kivy.graphics import Color, Rectangle, PushMatrix, PopMatrix, Rotate, Translate
 import math
 
 class KivyTwister:
@@ -18,8 +16,6 @@ class KivyTwister:
             self.rotation -= 360
 
     def draw(self, canvas):
-        #print("Drawing twister")
-        #print(f"Position: ({self.center_x}, {self.center_y}), Size: {self.size}")
         with canvas:
             PushMatrix()
             Translate(self.center_x, self.center_y)

@@ -1,6 +1,7 @@
 from kivy.graphics import Color, Ellipse
 import random
 import math
+import config
 
 class KivyDot:
     def __init__(self, center_x, center_y, ring_radius, scale_factor):
