@@ -1,4 +1,4 @@
-from kivy.graphics import Color, Rectangle, PushMatrix, PopMatrix, Rotate, Translate
+from kivy.graphics import Color, Rectangle, Ellipse, PushMatrix, PopMatrix, Rotate, Translate
 import math
 
 class KivyTwister:

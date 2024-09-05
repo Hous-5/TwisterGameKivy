@@ -4,8 +4,8 @@ class SoundManager:
         self.music = self.asset_manager.get_sound('background_music.mp3')
         self.collect_sound = self.asset_manager.get_sound('collect.wav')
         self.game_over_sound = self.asset_manager.get_sound('game_over.wav')
-        self.menu_select_sound = self.asset_manager.get_sound('menu_select.wav')
-        self.menu_click_sound = self.asset_manager.get_sound('menu_click.wav')
+        self.menu_select_sound = self.asset_manager.get_sound('select.wav')
+        self.menu_click_sound = self.asset_manager.get_sound('click.wav')
         self.powerup_sound = self.asset_manager.get_sound('powerup.wav')
         self.direction_change_sound = self.asset_manager.get_sound('direction_change.wav')
 

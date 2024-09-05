@@ -31,6 +31,7 @@ class TwisterGame(Widget):
         self.elapsed_time = 0
         
         self.load_textures()
+        
         Clock.schedule_once(self.create_game_objects, 0)
         Clock.schedule_once(self.create_ui_elements, 0)
 
@@ -48,6 +49,7 @@ class TwisterGame(Widget):
             self.player_texture = None
 
     def create_ui_elements(self, dt):
+        # Existing UI elements (score and time labels) remain unchanged
         self.score_label = Label(
             text="Score: 0",
             font_size=dp(20),
@@ -63,15 +65,6 @@ class TwisterGame(Widget):
             pos=(self.width / 2 - dp(40), self.height - dp(40))
         )
         self.add_widget(self.time_label)
-
-        self.pause_button = Button(
-            text="||",
-            size_hint=(None, None),
-            size=(dp(40), dp(40)),
-            pos=(self.width - dp(50), self.height - dp(50))
-        )
-        self.pause_button.bind(on_press=self.pause_game)
-        self.add_widget(self.pause_button)
 
     def create_game_objects(self, dt):
         self.center_x = self.width / 2
@@ -247,14 +240,15 @@ class TwisterGame(Widget):
             Clock.unschedule(self.update)
             App.get_running_app().show_pause_menu()
 
+    def show_settings(self, instance):
+        if self.game_started and not self.game_over:
+            Clock.unschedule(self.update)
+        App.get_running_app().show_settings()
+
     def resume_game(self):
         if self.game_started and not self.game_over:
             Clock.schedule_interval(self.update, 1.0/60.0)
 
-    def on_size(self, *args):
-        # Update label positions when window size changes
-        self.update_score_label()
-        self.update_time_label()
 
     def reset_game(self):
         self.game_started = False
